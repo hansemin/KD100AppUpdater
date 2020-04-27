@@ -27,18 +27,57 @@ namespace KD100AppUpdater
             InitializeComponent();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            var basePath = AppDomain.CurrentDomain.BaseDirectory;
-            var fileNames = System.IO.Directory.GetFiles(basePath);
-
-            foreach (var fileName in fileNames)
+            this.IsEnabled = false;
+            try
             {
-                File.Copy(fileName, App.AppPath + System.IO.Path.GetFileName(fileName), true);
-            }
+                while (true)
+                {
+                    Process[] p = Process.GetProcessesByName(App.AppName);
+                    if (p.Length == 0)
+                    {
+                        break;
+                    }
+                    await Task.Delay(100);
+                    p[0].Kill();
+                }
 
-            Process.Start(App.AppPath + App.NewAppName);
+                Copy(App.UpdatePath, App.AppPath);
+
+                MessageBox.Show("Update Done.", "KD-100 App", MessageBoxButton.OK, MessageBoxImage.Information);
+                Process.Start(App.AppPath + App.NewAppName);
+            }
+            catch (Exception ee)
+            {
+                MessageBox.Show(ee.Message);
+            }
             Environment.Exit(0);
+        }
+
+        public static void Copy(string sourceDirectory, string targetDirectory)
+        {
+            var diSource = new DirectoryInfo(sourceDirectory);
+            var diTarget = new DirectoryInfo(targetDirectory);
+
+            CopyAll(diSource, diTarget);
+        }
+
+        public static void CopyAll(DirectoryInfo source, DirectoryInfo target)
+        {
+            Directory.CreateDirectory(target.FullName);
+            
+            foreach (FileInfo fi in source.GetFiles())
+            {                
+                fi.CopyTo(System.IO.Path.Combine(target.FullName, fi.Name), true);
+            }
+            
+            foreach (DirectoryInfo diSourceSubDir in source.GetDirectories())
+            {
+                DirectoryInfo nextTargetSubDir =
+                    target.CreateSubdirectory(diSourceSubDir.Name);
+                CopyAll(diSourceSubDir, nextTargetSubDir);
+            }
         }
     }
 }

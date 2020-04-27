@@ -5,6 +5,7 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -15,18 +16,15 @@ namespace KD100AppUpdater
     /// </summary>
     public partial class App : Application
     {
-        static public string NewAppName { get; set; } = "TestProjectApp.exe";
+        static public string NewAppName { get; set; } = "KD100App.exe";
         static public string AppPath { get; set; }
         static public string AppName { get; set; }
+
+        static public string UpdatePath { get; set; } = AppDomain.CurrentDomain.BaseDirectory;
 
         protected override void OnStartup(StartupEventArgs args)
         {
             base.OnStartup(args);
-
-            //foreach (var arg in args.Args)
-            //{
-            //    MessageBox.Show(arg);
-            //}
 
             try
             {
@@ -36,37 +34,22 @@ namespace KD100AppUpdater
                 AppPath = args.Args[0];
                 AppName = args.Args[1];
 
-                StartUpdateWindow();                    
+                StartUpdateWindow();
             }
             catch (Exception e)
             {
                 MessageBox.Show(e.Message, "Failed Update", MessageBoxButton.OK, MessageBoxImage.Error);
                 Environment.Exit(0);
             }
-
-            
-                
-
-            
         }
 
         private void StartUpdateWindow()
         {
-            var excuteFileName = NewAppName;
-            var basePath = AppDomain.CurrentDomain.BaseDirectory;
-            var fileNames = Directory.GetFiles(basePath, excuteFileName);
+            var fileNames = Directory.GetFiles(UpdatePath, NewAppName);
             if (fileNames.Length == 0)
             {
-                throw new Exception($"Not exist Update file : {excuteFileName}");
+                throw new Exception($"Not exist Update file : {NewAppName}");
             }
-
-
-            Process[] p = Process.GetProcessesByName(AppName);
-            if (p.Length == 0)
-            {
-                throw new Exception($"Not Find Exit Process : {AppName}");
-            }
-            p[0].Kill();
 
             var mainWindow = new MainWindow();
             mainWindow.Show();
