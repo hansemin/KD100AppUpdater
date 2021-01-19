@@ -43,6 +43,13 @@ namespace KD100AppUpdater
                     p[0].Kill();
                 }
 
+               
+                string currencyDBFilePath = System.IO.Path.Combine(App.AppPath, "Kisan.Cdmp.Currency.db");
+                if (File.Exists(currencyDBFilePath))
+                {                    
+                    File.Delete(currencyDBFilePath);
+                }
+
                 Copy(App.UpdatePath, App.AppPath);
 
                 MessageBox.Show("Update Done.", "KD-100 App", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -66,12 +73,23 @@ namespace KD100AppUpdater
         public static void CopyAll(DirectoryInfo source, DirectoryInfo target)
         {
             Directory.CreateDirectory(target.FullName);
-            
+
             foreach (FileInfo fi in source.GetFiles())
-            {                
-                fi.CopyTo(System.IO.Path.Combine(target.FullName, fi.Name), true);
+            {
+                if (fi.Extension.Contains("sys"))                                    
+                    continue;                
+
+                try
+                {
+                    fi.CopyTo(System.IO.Path.Combine(target.FullName, fi.Name), true);
+                }
+                catch (Exception ex)
+                {
+                    continue;
+                }
             }
-            
+
+
             foreach (DirectoryInfo diSourceSubDir in source.GetDirectories())
             {
                 DirectoryInfo nextTargetSubDir =
