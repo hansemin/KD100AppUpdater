@@ -22,17 +22,44 @@ namespace KD100AppUpdater
 
         static public string UpdatePath { get; set; } = AppDomain.CurrentDomain.BaseDirectory;
 
-        protected override void OnStartup(StartupEventArgs args)
+        protected async override void OnStartup(StartupEventArgs args)
         {
             base.OnStartup(args);
 
             try
             {
-                if (args.Args.Length != 2)
+                if (args.Args.Length == 0)
                     throw new Exception($"Error Args Length : {args.Args.Length}");
+
+                
 
                 AppPath = args.Args[0];
                 AppName = args.Args[1];
+
+
+                if (args.Args.Length == 3)
+                {
+                    switch (args.Args[2])
+                    {
+                        case "-restart":
+                            {
+                                while (true)
+                                {
+                                    Process[] p = Process.GetProcessesByName(App.AppName);
+                                    if (p.Length == 0)
+                                    {
+                                        break;
+                                    }
+                                    await Task.Delay(100);
+                                    p[0].Kill();
+                                }
+
+                                Process.Start(App.AppPath + App.NewAppName);
+                                Environment.Exit(0);
+                            }
+                            break;
+                    }
+                }
 
                 StartUpdateWindow();
             }
